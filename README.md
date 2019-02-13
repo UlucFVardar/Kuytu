@@ -108,9 +108,9 @@ log.logging([l1,l2,l3])  ## Save '.save_XML' log.
 
 
 ---
-### First part of the Wiki Full Extraction is finished
+# First part of the Wiki Full Extraction is finished
 
-#### The Outputs are ;
+##### The Outputs are ;
 ![alttext](https://raw.githubusercontent.com/UlucFVardar/Kuytu/master/Examples/Output_of_seperation.png)
 
 
