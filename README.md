@@ -106,11 +106,11 @@ log.logging([l1,l2,l3])  ## Save '.save_XML' log.
     !--     30 Article Saved Successfully -- FileName(   withInfoBoxPages_bulkXML.xml)----------!
     !----------  There is no Page to Save -- FileName(   NonStandartPages_bulkXML.xml)----------!
 
-
 ---
-# First part of the Wiki Full Extraction is finished
 
-##### The Outputs are ;
+### First part of the Wiki Full Extraction is finished
+
+##### The Outputs are ;
 ![alttext](https://raw.githubusercontent.com/UlucFVardar/Kuytu/master/Examples/Output_of_seperation.png)
 
 
