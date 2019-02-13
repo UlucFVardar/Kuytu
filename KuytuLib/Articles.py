@@ -134,11 +134,13 @@ class Article:
 			infoBox = '\n'.join(infoBox)
 			return infoBox
 		def seperateParagraph(article,text,NumberofParagraph):
-			for i,p in enumerate(text.split('\n\n')):
-				if i == NumberofParagraph : 
-					break
+			counter = 0
+			for p in text.split('\n\n'):
 				if len(p)>10:
 					article.add_bulkParagraph(p)
+					counter +=1
+				if counter == NumberofParagraph : 
+					break			
 		'''infoBox and Text seperate'''
 		text = self.article_data['Article_BulkTexts']['allBulkText']
 		article_txt = text[:text.find("==")]

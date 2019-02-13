@@ -100,8 +100,7 @@ class WikiDumpParser:
                     BK_type = article.get_infoBoxType()
                     if '[' in BK_type or '{' in BK_type or \
                             ']' in BK_type or '}' in BK_type or \
-                                len (BK_type) >=30:
-
+                                len (BK_type) >=30 or '|' in BK_type or BK_type == '':
                         self.articles['NonStandart_articles_list'].append(tuple_data)
                         self.log['#NonStandart_Article'] +=1
                         continue
@@ -126,8 +125,6 @@ class WikiDumpParser:
                 self.log['#NonStandart_Article'] +=1
                 #saveError( all_xml_test_as_string )
                 continue
-
-
             #save articles
         #save all type
 
