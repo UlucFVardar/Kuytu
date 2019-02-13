@@ -47,25 +47,25 @@ class Article:
 	def get_infoBoxType(self):
 		return self.article_data['infoBox_type']
 	def set_id(self,id):
-		self.article_data['Id'] = id.replace('&','&amp;')
+		self.article_data['Id'] = id.strip().replace('&','&amp;')
 
 	def set_title(self,title):
-		self.article_data['Title'] = title.replace('&','&amp;')
+		self.article_data['Title'] = title.strip().title().replace('&','&amp;')
 
 	def set_infoBoxBulkText(self,infoBox):
-		self.article_data['infoBoxText'] = infoBox.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;') #.replace('\n|','\n\t\t\t\t|')
+		self.article_data['infoBoxText'] = infoBox.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;') #.replace('\n|','\n\t\t\t\t|')
 
 	def set_infoBox_clean(self,infoBox_clean):
 		self.article_data['cleanInfoBox'] = infoBox_clean
 
 	def set_infoBox_type(self,infoBox_type):
-		self.article_data['infoBox_type'] = infoBox_type.replace('&','&amp;')
+		self.article_data['infoBox_type'] = infoBox_type.strip().title().replace('&','&amp;')
 
 	def set_allBulkText(self,allBulkText):
-		self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')	
+		self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')	
 
 	def add_bulkParagraph(self,paragraph):
-		paragraph = paragraph.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
+		paragraph = paragraph.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
 		try:
 			self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph )
 		except Exception as e:
