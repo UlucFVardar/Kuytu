@@ -16,5 +16,5 @@ template = """
 		</Article_BulkTexts>
 	</Page>	"""
 all_text = """	<All_Text>
-			%(allBulkText)s
-		<All_Text>"""
+			%s
+		</All_Text>"""

@@ -24,6 +24,7 @@ def save_XML(XMLPath, indexPath, articleList ):
 			try:
 				return tp.all_text%article_object.get_allBulkText()
 			except Exception as e:
+				#print e
 				return ''
 		''' bura '''
 
@@ -114,3 +115,36 @@ def save_Graph(output_path,data,min_repetition,title):
 			title = title, 
 			saving_path = output_path+title)
 	#print output_path+title
+
+#-----
+
+def read_XML(XML_path):
+	''' This funciton read XML data of Articles that has only InfoBox Data.'''
+	import xml.etree.ElementTree as ET
+	tree = ET.parse(XML_path)
+	root = tree.getroot()
+
+	Articles = []
+	for page in root.findall('Page'):
+		article_object = Article()
+		# Getting title, id, whole text of the article
+		article_object.set_id( id = page.find('Id').text )
+		article_object.set_title( title = page.find('Title').text )
+		article_object.set_infoBox_type( infoBox_type =page.find('InfoBoxType').text )
+		article_object.set_infoBoxBulkText ( infoBox = page.find('InfoBox_BulkText').text )
+		try:
+			article_object.set_allBulkText(allBulkText = ((page.find('Article_BulkTexts')).find('All_Text')).text )
+			if article_object.get_allBulkText() == '' :
+				article_object.del_allBulkText()
+		except Exception as e:
+			print e
+
+		try:
+			article_object.set_bulkParagraphs( Paragraphs = [p.text for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
+		except Exception as e:
+			print e
+		Articles.append(article_object)
+		#article_object.__string__()
+	return Articles
+
+

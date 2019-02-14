@@ -53,7 +53,7 @@ class Article:
 		self.article_data['Title'] = title.strip().title().replace('&','&amp;')
 
 	def set_infoBoxBulkText(self,infoBox):
-		self.article_data['infoBoxText'] = infoBox.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;') #.replace('\n|','\n\t\t\t\t|')
+		self.article_data['infoBoxText_Bulk'] = infoBox.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;') #.replace('\n|','\n\t\t\t\t|')
 
 	def set_infoBox_clean(self,infoBox_clean):
 		self.article_data['cleanInfoBox'] = infoBox_clean
@@ -64,6 +64,9 @@ class Article:
 	def set_allBulkText(self,allBulkText):
 		self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')	
 
+
+	def set_bulkParagraphs(self,Paragraphs):
+		self.article_data['Article_BulkTexts']['Paragraphs'] = Paragraphs
 	def add_bulkParagraph(self,paragraph):
 		paragraph = paragraph.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
 		try:
@@ -77,16 +80,21 @@ class Article:
 	def get_Title(self):
 		return self.article_data['Title']
 	def get_infoBoxText(self):
-		return self.article_data['infoBoxText']
+		return self.article_data['infoBoxText_Bulk']
+	def get_cleanInfoBox(self):
+		return self.article_data['cleanInfoBox']		
 	def get_infoBox_type(self):
 		return self.article_data['infoBox_type']
 	def get_allBulkText(self):
 		try:
 			return self.article_data['Article_BulkTexts']['allBulkText'] 
 		except Exception as e:
-			return Exception("user doesn't want alltext")
+			#print e
+			return ''
 	def get_bulkParagraphs(self):
 		return self.article_data['Article_BulkTexts']['Paragraphs']
+	def del_allBulkText(self):
+		del self.article_data['Article_BulkTexts']['allBulkText']
 	def add_cleanParagraph(self,paragraph):
 		try:
 			self.article_data['Article_CleanTexts']['Paragraphs'].append( paragraph )

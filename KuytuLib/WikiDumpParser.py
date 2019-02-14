@@ -55,9 +55,7 @@ class WikiDumpParser:
                                 .replace('&#304;','İ')\
                                 .replace('&#305;','ı')\
                                 .replace('&#231;','c')\
-                                .replace('&#199;','Ç')
-                           
-                                
+                                .replace('&#199;','Ç')                        
         return xml_fname
 
 
