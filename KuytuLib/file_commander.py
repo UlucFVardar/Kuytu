@@ -32,13 +32,13 @@ def save_XML(XMLPath, indexPath, articleList ):
 		for p in article_object.get_bulkParagraphs():
 			paragraphList.append(give_paragrafXML(p))
 		map = {}
-		map['ParagraphList_XMLtext'] = '\n '.join(paragraphList)
-		map['Id'] = article_object.get_Id()
-		map['Title'] = article_object.get_Title()
-		map['infoBox_type'] = article_object.get_infoBox_type()
-		map['infoBoxText'] = article_object.get_infoBoxText()
-		map['allBulkText'] = article_object.get_allBulkText()
-		map['AllText_XMLText'] = give_allArticleText(article_object)
+		map['ParagraphList_XMLtext'] = make_xml_changes('\n '.join(paragraphList))
+		map['Id'] = make_xml_changes(article_object.get_Id())
+		map['Title'] = make_xml_changes(article_object.get_Title())
+		map['infoBox_type'] = make_xml_changes(article_object.get_infoBox_type())
+		map['infoBoxText'] = make_xml_changes(article_object.get_infoBoxText())
+		map['allBulkText'] = make_xml_changes(article_object.get_allBulkText())
+		map['AllText_XMLText'] = make_xml_changes(give_allArticleText(article_object))
 
 		return tp.template%map
 	''' 2'''
@@ -60,7 +60,7 @@ def save_XML(XMLPath, indexPath, articleList ):
 		indexFileString = "%s#%s#%d\n"
 		if type(article_object)==type(Article()): # article object 
 			articleXML_text =  generate_XML_page(article_object).encode('utf-8')
-			indexFileString = indexFileString%(article_object.get_Id(), article_object.get_Title(), i+1 )
+			indexFileString = indexFileString%(make_xml_changes(article_object.get_Id()), make_xml_changes(article_object.get_Title()), i+1 )
 		elif type(article_object) == type(tuple()): 
 			all_xml_test_as_string, Title, Id = article_object
 			indexFileString = indexFileString%( Id , Title, i+1 )
@@ -117,8 +117,16 @@ def save_Graph(output_path,data,min_repetition,title):
 	#print output_path+title
 
 #-----
+def re_make_xml_changes(text):
+	return text.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
+def make_xml_changes(text):
+	return text.replace('&amp;','&').replace('&gt;','>').replace('&lt;','<')
+
+
 
 def read_XML(XML_path):
+	
+
 	''' This funciton read XML data of Articles that has only InfoBox Data.'''
 	import xml.etree.ElementTree as ET
 	tree = ET.parse(XML_path)
@@ -128,19 +136,19 @@ def read_XML(XML_path):
 	for page in root.findall('Page'):
 		article_object = Article()
 		# Getting title, id, whole text of the article
-		article_object.set_id( id = page.find('Id').text )
-		article_object.set_title( title = page.find('Title').text )
-		article_object.set_infoBox_type( infoBox_type =page.find('InfoBoxType').text )
-		article_object.set_infoBoxBulkText ( infoBox = page.find('InfoBox_BulkText').text )
+		article_object.set_id( id = re_make_xml_changes(page.find('Id').text) )
+		article_object.set_title( title = re_make_xml_changes(page.find('Title').text) )
+		article_object.set_infoBox_type( infoBox_type = re_make_xml_changes(page.find('InfoBoxType').text) )
+		article_object.set_infoBoxBulkText ( infoBox = re_make_xml_changes(page.find('InfoBox_BulkText').text) )
 		try:
-			article_object.set_allBulkText(allBulkText = ((page.find('Article_BulkTexts')).find('All_Text')).text )
+			article_object.set_allBulkText(allBulkText = re_make_xml_changes(((page.find('Article_BulkTexts')).find('All_Text')).text) )
 			if article_object.get_allBulkText() == '' :
 				article_object.del_allBulkText()
 		except Exception as e:
 			print e
 
 		try:
-			article_object.set_bulkParagraphs( Paragraphs = [p.text for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
+			article_object.set_bulkParagraphs( Paragraphs = [re_make_xml_changes(p.text) for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
 		except Exception as e:
 			print e
 		Articles.append(article_object)

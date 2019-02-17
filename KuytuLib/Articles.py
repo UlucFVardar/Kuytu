@@ -36,6 +36,9 @@ class Stack:
     def size(self):
         return len(self.items)
 
+
+
+
 class Article:
 	def __init__(self):
 		self.article_data = dict()
@@ -47,28 +50,28 @@ class Article:
 	def get_infoBoxType(self):
 		return self.article_data['infoBox_type']
 	def set_id(self,id):
-		self.article_data['Id'] = id.strip().replace('&','&amp;')
+		self.article_data['Id'] = id.strip()
 
 	def set_title(self,title):
-		self.article_data['Title'] = title.strip().title().replace('&','&amp;')
+		self.article_data['Title'] = title.strip().title()
 
 	def set_infoBoxBulkText(self,infoBox):
-		self.article_data['infoBoxText_Bulk'] = infoBox.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;') #.replace('\n|','\n\t\t\t\t|')
+		self.article_data['infoBoxText_Bulk'] = infoBox.strip()
 
 	def set_infoBox_clean(self,infoBox_clean):
 		self.article_data['cleanInfoBox'] = infoBox_clean
 
 	def set_infoBox_type(self,infoBox_type):
-		self.article_data['infoBox_type'] = infoBox_type.strip().title().replace('&','&amp;')
+		self.article_data['infoBox_type'] = infoBox_type.strip().title()
 
 	def set_allBulkText(self,allBulkText):
-		self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')	
+		self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.strip()
 
 
 	def set_bulkParagraphs(self,Paragraphs):
 		self.article_data['Article_BulkTexts']['Paragraphs'] = Paragraphs
 	def add_bulkParagraph(self,paragraph):
-		paragraph = paragraph.strip().replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
+		paragraph = paragraph.strip()
 		try:
 			self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph )
 		except Exception as e:
@@ -76,14 +79,19 @@ class Article:
 			self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph )
 
 	def get_Id(self):
+
 		return self.article_data['Id']
 	def get_Title(self):
+
 		return self.article_data['Title']
 	def get_infoBoxText(self):
+
 		return self.article_data['infoBoxText_Bulk']
 	def get_cleanInfoBox(self):
+
 		return self.article_data['cleanInfoBox']		
 	def get_infoBox_type(self):
+
 		return self.article_data['infoBox_type']
 	def get_allBulkText(self):
 		try:
@@ -92,8 +100,10 @@ class Article:
 			#print e
 			return ''
 	def get_bulkParagraphs(self):
+
 		return self.article_data['Article_BulkTexts']['Paragraphs']
 	def del_allBulkText(self):
+
 		del self.article_data['Article_BulkTexts']['allBulkText']
 	def add_cleanParagraph(self,paragraph):
 		try:
@@ -111,6 +121,7 @@ class Article:
 			self.article_data['Article_CleanTexts']['Sentences'] = []
 			self.article_data['Article_CleanTexts']['Sentences'].append( paragraph )		
 	def __string__(self):
+
 		print json.dumps(self.article_data,indent = 4,ensure_ascii=False, encoding='utf8')#.encode('utf-8')
 	#----------------
 	def seperateBulkText(self,StoreAllText, NumberofParagraph):

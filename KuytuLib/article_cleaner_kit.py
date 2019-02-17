@@ -11,53 +11,67 @@
 import re
 import json
 
-global maps
 
-def set_BK_fieldsMaps(userMaps):
-	global maps
-	maps = userMaps
-	print "Kuytu's map schema is chaned"
 def configure_BK_fieldsMaps():
 	''' User can easly add a new field in maps or banned fields here, 
 		Also User can edit the map with in the program
 	'''
-	month = [  'Ocak'.decode('utf-8'),
-	            'Şubat'.decode('utf-8'),
-	            'Mart'.decode('utf-8'),
-	            'Nisan'.decode('utf-8'),
-	            'Mayıs'.decode('utf-8'),
-	            'Haziran'.decode('utf-8'),
-	            'Temmuz'.decode('utf-8'),
-	            'Ağustos'.decode('utf-8'),
-	            'Eylül'.decode('utf-8'),
-	            'Ekim'.decode('utf-8'),
-	            'Kasım'.decode('utf-8'),
-	            'Aralık'.decode('utf-8')]
-	key_banned = ['imza'.decode('utf-8'),
-	              'resim'.decode('utf-8'),
-	              'resimboyutu'.decode('utf-8'),
-	              'websitesi'.decode('utf-8'),
-	              'image'.decode('utf-8'),
-	              'resimadı'.decode('utf-8'),
-	              'genişlet'.decode('utf-8'),
-	              'screenshot'.decode('utf-8'),
-	              'logo'.decode('utf-8'),
-	              'resimyazısı'.decode('utf-8')]
+	month = [   'Ocak',
+	            'Şubat',
+	            'Mart',
+	            'Nisan',
+	            'Mayıs',
+	            'Haziran',
+	            'Temmuz',
+	            'Ağustos',
+	            'Eylül',
+	            'Ekim',
+	            'Kasım',
+	            'Aralık']
 
-	key_name_map =['adı'.decode('utf-8'),
-		          'isim'.decode('utf-8'),
-		          'ismi'.decode('utf-8'),
-		          'adi'.decode('utf-8'),
-		          'name'.decode('utf-8'),
-		          'karakteradı'.decode('utf-8')]
-	key_birth_map = ['dogumtarihi'.decode('utf-8')]
-	global maps
+	key_banned = ['imza',
+				   'internet',
+	              'resim',
+	              'resimboyutu',
+	              'websitesi',
+	              'renkler',
+	              'altyazı',
+	              'plakşirketi',
+	              'internetsitesi',
+	              'resmiinternetsitesi'
+	              'image',
+	              'resimadı',
+	              'genişlet',
+	              'screenshot',
+	              'logo',
+	              'resimyazısı']
+
+	value_banned = ["<!--",
+	                "yalın liste|",
+	                ""]	              	              
+
+
+
+	value_maps = { 	'ad' : 		   	[   'adı'		,
+										'isim'		,
+										'ismi'		,
+										'adi'		,
+										'name'		,
+										'karakteradı'],
+
+					'doğumtarihi' : [	'dogumtarihi'],
+					'meslek'	  : [	'mesleği'	 ]
+
+
+					}
+
+
 	maps = {}
-	maps['ad'] = key_name_map
-	maps['doğumtarihi'.decode('utf-8')] = key_birth_map
 
+	maps['value_maps'] = value_maps
 	maps['month'] = month
 	maps['key_banned'] = key_banned
+	maps['value_banned'] = value_banned
 	return maps
 	
 
@@ -69,8 +83,8 @@ def clean_InfoBoxBulk( Bulk_InfoBoxText ):
 		infoBox = re.sub(r"<br/>","",infoBox)
 		infoBox = re.sub(r"<br />","",infoBox)    
 		infoBox = re.sub(r"<br>","",infoBox)
-		infoBox = infoBox.replace('[[','').replace(']]','').replace("\'\'\'",'').replace("''",'')
-		infoBox = infoBox.replace('{{','').replace('}}','')
+		#infoBox = infoBox.replace('[[','').replace(']]','').replace("\'\'\'",'').replace("''",'')
+		#infoBox = infoBox.replace('{{','').replace('}}','')
 		infoBox = re.sub(r"<ref(.|\n)*</ref>","",infoBox)
 		infoBox = infoBox.replace(u'\xa0', u' ')
 		return infoBox
@@ -124,48 +138,65 @@ def clean_InfoBoxBulk( Bulk_InfoBoxText ):
 	Bulk_InfoBoxText = step2(Bulk_InfoBoxText)
 	Bulk_InfoBoxText = step3(Bulk_InfoBoxText)
 	Bulk_InfoBoxText = clean_jsonvalues(Bulk_InfoBoxText)
-	import json
-	return json.dumps(Bulk_InfoBoxText,indent=4,ensure_ascii=False, encoding='utf8')
+	#print json.dumps(Bulk_InfoBoxText,indent=4,ensure_ascii=False, encoding='utf8')
+	return Bulk_InfoBoxText
+
 
 
 
 
 #----------
+# . ['adı','isim','ismi','adi','name','karakteradı'] --> 'ad'
+def key_map(data,maps ):
+	for maped_value in maps['value_maps'].keys():
+		if data in maps['value_maps'][maped_value]:
+			return maped_value
+	return data
+
+
 # for clean infoBox
 def clean_jsonvalues(infobox):
 	maps = configure_BK_fieldsMaps()
 	try:
 	    newjson = {}
 	    for key in infobox.keys():
-	        new_key = key.replace(' ','').replace('_','').lower()
-	        print 'uluc best'
-	        print new_key
-	        if new_key.decode('utf-8') in  maps['key_banned']  or infobox[key].decode('utf-8') == "" or '<!--'.decode('utf-8') in infobox[key].decode('utf-8') or 'yalın liste|'.decode('utf-8') in infobox[key].decode('utf-8'):
-	            continue
-	        new_key =  key_map(new_key)
+	    	infobox[key] = infobox[key].encode('utf8')
+	        new_key = key.encode('utf8').replace(' ','').replace('_','').lower()
 
-	        temp_value = infobox[key].replace("'",'').replace('\"','')
-	        if new_key != 'ad'.decode('utf-8'):
-	            temp_value =  clean_pipes(temp_value)
+	        # banned key 
+	        if new_key in  maps['key_banned']  or\
+	        	 infobox[key] in maps['value_banned']:
+	        	continue
+
+	        ## Key cleaning
+	        new_key = key_map(new_key,maps)
+
+	        ## Value cleaning
+	        new_value = infobox[key].replace("'",'').replace('\"','')
+	        if new_key != 'ad':
+	            new_value =  clean_pipes(new_value)
 	        else:
-	            temp_value =  remove_brackets_with_text(temp_value)
-
-	        temp_value =  clean_tags(temp_value)
-
-	        temp_value =  remove_brackets(temp_value)
-
-	        if new_key == 'doğumtarihi'.decode('utf-8') \
-	            or new_key =='ölümtarihi'.decode('utf-8') \
-	            or new_key  == 'dogumtarihi'.decode('utf-8') :
-	            temp_value =  date_map(temp_value)
-	        if new_key == 'meslek'.decode('utf-8') :
-	            temp_value = temp_value.replace(',',' ve ')
+	            new_value =  remove_brackets_with_text(new_value)
 	        
-	        newjson[new_key] = temp_value        
+	        
+	        new_value =  clean_tags(new_value)
+	        new_value =  remove_brackets(new_value)	        
+	        if new_key == 'meslek' :
+	        	parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
+	        	new_value = ', '.join(parts[:-1]) +' ve '+ parts[-1]
+	        if 'tarihi' in new_key:
+	        	new_value =  date_map(new_value,maps)
+
+	        newjson[new_key] = new_value        
+
 	    return newjson
 	except Exception as e:
-	    print e
+	    print e,'[Line: 168 ]'
 	    return None
+
+
+
+
 
 # . [[asdasda]], deneme ---> , deneme
 def remove_brackets_with_text( data):
@@ -185,18 +216,6 @@ def remove_brackets( data):
     except:
         return data
 
-
-# . ['adı','isim','ismi','adi','name','karakteradı'] --> 'ad'
-def key_map( data):
-	global maps
-	if data.decode('utf-8') == 'mesleği'.decode('utf-8'):
-	    return 'meslek'.decode('utf-8')
-	if data.decode('utf-8') in  maps['ad']:
-	    return 'ad'.decode('utf-8')
-	if data.decode('utf-8') in  maps['doğumtarihi'.decode('utf-8')]:
-	    return 'doğumtarihi'.decode('utf-8')
-	return data.decode('utf-8')
-
 # . [[Film yapımcısı|Yapımcı]] , {{Film yönetmeni|Yönetmen}} --->Yapımcı, Yönetmen
 def clean_pipes( data):
     pattern  = '(\[\[[^\]\]]*\|([^\]\]]*)\]\])|({{[^}}]*\|([^}}]*)}})' 
@@ -204,9 +223,18 @@ def clean_pipes( data):
     try:
         if p:
             clean = p.sub(r'\2', data)
+            if '|' not in clean:
+            	return clean
+    except Exception as e:
+        pass
+    pattern  = '({{[^}}]*\|([^}}]*)}})|(\[\[[^\]\]]*\|([^\]\]]*)\]\])' 
+    p = re.compile(pattern, re.MULTILINE)
+    try:
+        if p:
+            clean = p.sub(r'\2', data)
             return clean
     except Exception as e:
-        return data
+        return data        
 
 # . <br> --> ,
 def clean_tags( data):
@@ -225,7 +253,8 @@ def clean_tags( data):
 # . 123 ---> 123       
 # . 2188 2 2 --->  2 Şubat 2188
 # . 2188.2.2 --->  2 Şubat 2188
-def date_map( date_value ):
+def date_map( date_value,maps ):
+    date_value = '{{'+date_value+'}}'
     orj = date_value
     converted_date = date_value
     try : 
