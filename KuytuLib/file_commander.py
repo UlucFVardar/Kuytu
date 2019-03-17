@@ -156,27 +156,5 @@ def read_XML(XML_path):
 
 
 
-import xlsxwriter
-def export_2_excel_for_check(file_name,articles_data):
-	'''
-		to see the regex result and errors in data
-	'''
 
-
-	# Create a workbook and add a worksheet.
-	workbook = xlsxwriter.Workbook(file_name)
-	for type_ in articles_data.keys():
-		worksheet = workbook.add_worksheet(type_)
-		row = 0
-		for a in articles_data[type_]:
-
-			for i,(key,value) in enumerate(a.get_cleanInfoBox().items()):
-
-			    #print entity
-			    col = 0
-			    # Iterate over the data and write it out row by row.
-			    worksheet.write(row, col,     key.decode('utf-8'))
-			    worksheet.write(row, col + 1 +i, value.decode('utf-8'))
-			row += 1
-	workbook.close()
 

@@ -53,7 +53,8 @@ def configure_BK_fieldsMaps():
 	value_banned = ["<!--",
 					"null",
 	                "yalın liste|",
-	                ""]	              	              
+	                "",
+	                "flatlist|"]
 
 
 
@@ -69,10 +70,30 @@ def configure_BK_fieldsMaps():
 					'meslek'	  : [	'mesleği'	 ],
 					'ulus'		  : [   'nationality' ]
 					}
+	county_map = {
+				"KOR" :"Kore",
+				"TUR" : "Türkiye",
+				"GER" : "Almanya",
+				"JAM" : "Jameika",
+				"ESP" : "İspanya",
+				"RUS" : "Rusya",
+				"USA" : "ABD",
+				"FRA" : "Fransa",
+				"CHN" : "Çin",
+				"UK"  : "Büyük Britanya",
+				"ENG" : "İngiltere",
+ 				"SVK" :"Slovakya",
+				"SWE" : "İsviçre",
+				"AUS" : "Avusturalya",
+				"SSCB":"Sovyetler Birliği",
+				"MEX" : "Meksika",
+				"MAR" : "FAS"
+
+	}
 
 
 	maps = {}
-
+	maps['county_map'] = county_map
 	maps['value_maps'] = value_maps
 	maps['month'] = month
 	maps['key_banned'] = key_banned
@@ -85,9 +106,9 @@ def clean_InfoBoxBulk( Bulk_InfoBoxText ):
 	def step1(infoBox):
 		#some cleanings
 		infoBox = re.sub(r"\[\[Dosya.*\]\]","",infoBox)
-		infoBox = re.sub(r"<br/>","",infoBox)
-		infoBox = re.sub(r"<br />","",infoBox)    
-		infoBox = re.sub(r"<br>","",infoBox)
+		infoBox = re.sub(r"<br/>",",",infoBox)
+		infoBox = re.sub(r"<br />",",",infoBox)    
+		infoBox = re.sub(r"<br>",",",infoBox)
 		#infoBox = infoBox.replace('[[','').replace(']]','').replace("\'\'\'",'').replace("''",'')
 		#infoBox = infoBox.replace('{{','').replace('}}','')
 		infoBox = re.sub(r"<ref(.|\n)*</ref>","",infoBox)
@@ -182,20 +203,50 @@ def clean_jsonvalues(infobox):
 	        ## Value cleaning
 	        new_value = infobox[key].replace("'",'').replace('\"','')
 	        if new_key != 'ad':
-	            new_value =  clean_pipes(new_value)
+	            new_value =  clean_pipes(new_value).strip()
 	        else:
 	            new_value =  remove_brackets_with_text(new_value)
+				if new_value == '':
+					return None
 	        
+	        
+        
+	        if new_key == 'meslek' or  new_key == 'dalı' or  new_key == 'alanı':
+	        	parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
+	        	parts = map(lambda x: x , parts)
+	        	if len(parts)>=2:
+	        		new_value = ', '.join(parts[:-1]) +' ve '+ parts[-1]
+	        	else:
+	        		new_value = ', '.join(parts)
+	        	
+
+	        if new_key == 'ulus' or  new_key == 'doğumyeri'  or  new_key == 'ülke':
+	        	if 'ayraksimge' in new_value:
+	        		new_value = clean_double_curly_brackets(new_value)
+	        	new_value =  clean_pipes(new_value).strip()
+	        	if maps['county_map'].get(new_value,'') !='':
+	        		new_value = maps['county_map'].get(new_value,'')
+
+	        if new_key == 'çağ':
+	        	new_value = new_value.replace(' felsefesi','')
+
+
+	       	if new_key == 'tarz':
+	       		new_value = new_value.replace('flatlist|','')
+	       	if new_key == 'oyunstili':
+	       		if new_value.find(';') != -1:
+	       			new_value = new_value[:new_value.find(';')]
 	        
 	        new_value =  clean_tags(new_value)
-	        new_value =  remove_brackets(new_value)	        
-	        if new_key == 'meslek' :
-	        	parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
-	        	new_value = ', '.join(parts[:-1]) +' ve '+ parts[-1]
+	        new_value =  remove_brackets(new_value)		       		
+	        
 	        if 'tarihi' in new_key:
-	        	new_value =  date_map(new_value,maps)
+	        	new_value =  date_map(new_value.strip(),maps)
 
-	        newjson[new_key] = new_value        
+
+
+	        
+	        newjson[new_key] = clean_normal_brackets(new_value)#.title()
 
 	    return newjson
 	except Exception as e:
@@ -204,7 +255,13 @@ def clean_jsonvalues(infobox):
 
 
 
-
+def clean_normal_brackets(data):
+    pattern= r'\([^\(|\)]*\)'
+    try:
+        data = re.sub(pattern,"",data)
+        return data.strip()
+    except Exception as e:
+        return data	
 
 # . [[asdasda]], deneme ---> , deneme
 def remove_brackets_with_text( data):
@@ -261,17 +318,21 @@ def clean_tags( data):
 # . 123 ---> 123       
 # . 2188 2 2 --->  2 Şubat 2188
 # . 2188.2.2 --->  2 Şubat 2188
+import copy
 def date_map( date_value,maps ):
     date_value = '{{'+date_value+'}}'
-    orj = date_value
+    if '{{bilinmiyor}}' == date_value:
+    	return None
+
+    orj = copy.deepcopy(date_value)
     converted_date = date_value
     try : 
         value = re.findall(r"(\|\d+|\d+)", date_value, re.MULTILINE) ## finding numbersafter pipes
         value = [int(w.replace('|', '')) for w in value]  # clean pipes |
-        if len(value) == 3:
+        if len(value) == 3 or len(value) == 4:
             converted_date = "%s %s %s"%(value[2],  maps['month'][value[1]-1],value[0])
             return converted_date
-        elif len(value) == 6:
+        elif len(value) == 6 or len(value) == 7:
             year1 = int(value[0])
             year2 = int(value[0+3])
             if year1 >year2:
@@ -307,6 +368,56 @@ def date_map( date_value,maps ):
     except Exception as e:
         #print e
         pass
+
+    # path {{Ölüm yılı ve yaşı|1428|1401}}
+    try:
+    	reg = "[^\|]*ve yaşı\|(\d*)\|\d*"
+    	match = re.search(r"[^\|]*ve yaşı\|(\d*)\|\d*", orj)
+    	return match.group(1)  
+    except Exception as e:
+    	pass
+
+
+    # path {{death year and age|1978|1924}}
+    try:
+    	reg = "[^\|]*ve yaşı\|(\d*)\|\d*"
+    	match = re.search(r"[^\|]*year and age\|(\d*)\|\d*", orj)
+    	return match.group(1)  
+    except Exception as e:
+    	pass
+	# path {{19 Ağustos 1905 (79 yaşında)}}
+	#      {{13 Haziran 1904 (72-73 yaşlarında)}}
+	#{{26 Şubat 1564 (Vaftiz olduğu tarih)}}
+    try:
+		#reg = "\{\{([^\(|^\)]*)\(\d*\syaşında"
+    	match = re.search(r"\{\{([^\(|^\)]*)\([^\)|^\(]*\)", orj)
+    	return match.group(1)  
+    except Exception as e:
+    	pass
+
+
+    #{{234}}
+    try:
+    	#reg = "\{\{(\d*)\}\}"
+    	match = re.search(r"\{\{(\d*)\}\}", orj)
+    	return match.group(1)  
+    except Exception as e:
+    	pass
+
+    	
+    #{{234 civarı}}
+    try:
+    	#reg = "\{\{(\d*) civarı\}\}"
+    	match = re.search(r"\{\{(\d*) civarı\}\}", orj)
+    	return match.group(1)  
+    except Exception as e:
+    	pass    
+
+    if len(orj)	> 40:
+    	return None
+    if 'MÖ' in orj:
+    	return orj[2:-2]
+
     return None
     #----------------------------------------------
 
@@ -347,6 +458,7 @@ def clean_Bulk_Text( Bulk_Text ):
 	return Bulk_Text
 
 # ----- Little functions
+
 def clean_dosya( data):
     try:
         return re.sub(r"\[\[Dosya.*\]\]","",data)
@@ -407,6 +519,7 @@ def clean_double_square_brackets( data):
         data = data.replace('[[','').replace(']]','')
     except :
         return data
+
 def clean_double_curly_brackets(data):
     try:
         return re.sub(r"\(({{.*?(.|\s).*?}})\)|({{.*?(.|\s).*?}})","",data)

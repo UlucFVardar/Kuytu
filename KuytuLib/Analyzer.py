@@ -1,8 +1,7 @@
-#! /usr/bin/env python
-# -*- coding: UTF-8 -*-
+#!/usr/bin/python2.7
+# -*- coding: utf-8 -*-
 # @author =__Uluç Furkan Vardar__
 
-# -*- coding: utf-8 -*-
 
 '''
     
@@ -47,6 +46,7 @@ def datafield_map(map_,seperated_articles):
     return seperated_articles
 
 def save_count_data( path, total_count_data, count_data, total_first_n, subcat_first_n, total_article_count, subcats_article_counts):
+
     mypath = path
     if not os.path.isdir(mypath):
         os.makedirs(mypath)
@@ -61,14 +61,31 @@ def save_count_data( path, total_count_data, count_data, total_first_n, subcat_f
 
     #------------ SUB
     for type_ in count_data.keys():
-        sub_cat_file = open(path+'/'+str(type_)+'_counts.txt','w')
+        sub_cat_file = open( '%s/%s_count.txt'%(path,type_.encode('utf-8')) ,'w')
         head = '%-30s\t,%6s\t,%s------>Over All Sum : %d\n'%('Field Name','Hit Count', 'Hit Ratio Over All(%)',subcats_article_counts[type_])+'_'*70+'\n'
         sub_cat_file.write(head)
         for datafield,n in count_data[type_].most_common(total_first_n):
             string = '%-30s\t,%6d\t,%s%.2f\n'%(datafield,n,'%', (n/subcats_article_counts[type_]*100) )
             sub_cat_file.write(string)
         sub_cat_file.close()
-
+import copy
+def hold_interested_datafields(interested_datafields,seperated_articles):
+    seperated_articles = copy.deepcopy(seperated_articles)
+    for type_ in seperated_articles.keys():
+        #print type_,'stars'
+        if interested_datafields.get(type_,'') == '':
+            continue
+        for i,a in enumerate(seperated_articles[type_]):
+            
+            bk = a.get_cleanInfoBox()
+            new_bk = {}
+            for key in interested_datafields[type_]:
+                if bk.get(key,'') != '':
+                    new_bk[key] = bk[key]
+                
+                
+            seperated_articles[type_][i].set_infoBox_clean(new_bk)
+    return seperated_articles
 
 
 
