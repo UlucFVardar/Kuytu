@@ -121,7 +121,6 @@ class Article:
 			self.article_data['Article_CleanTexts']['Sentences'] = []
 			self.article_data['Article_CleanTexts']['Sentences'].append( paragraph )		
 	def __string__(self):
-
 		print json.dumps(self.article_data,indent = 4,ensure_ascii=False, encoding='utf8')#.encode('utf-8')
 	#----------------
 	def seperateBulkText(self,StoreAllText, NumberofParagraph):

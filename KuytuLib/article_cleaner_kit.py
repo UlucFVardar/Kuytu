@@ -30,7 +30,7 @@ def configure_BK_fieldsMaps():
 	            'Aralık']
 
 	key_banned = ['imza',
-				   'internet',
+				  'internet',
 	              'resim',
 	              'resimboyutu',
 	              'websitesi',
@@ -40,13 +40,18 @@ def configure_BK_fieldsMaps():
 	              'internetsitesi',
 	              'resmiinternetsitesi'
 	              'image',
+	              'imagesize',
+	              'homepage',
 	              'resimadı',
+	              'imdb',
 	              'genişlet',
 	              'screenshot',
+	              'website',
 	              'logo',
 	              'resimyazısı']
 
 	value_banned = ["<!--",
+					"null",
 	                "yalın liste|",
 	                ""]	              	              
 
@@ -59,10 +64,10 @@ def configure_BK_fieldsMaps():
 										'name'		,
 										'karakteradı'],
 
-					'doğumtarihi' : [	'dogumtarihi'],
-					'meslek'	  : [	'mesleği'	 ]
-
-
+					'doğumtarihi' : [	'dogumtarihi','birthdate'],
+					'doğumyeri'   : [   'birthplace' ,'location'],
+					'meslek'	  : [	'mesleği'	 ],
+					'ulus'		  : [   'nationality' ]
 					}
 
 
@@ -156,6 +161,8 @@ def key_map(data,maps ):
 
 # for clean infoBox
 def clean_jsonvalues(infobox):
+	if infobox == None:
+		return None
 	maps = configure_BK_fieldsMaps()
 	try:
 	    newjson = {}
@@ -165,7 +172,8 @@ def clean_jsonvalues(infobox):
 
 	        # banned key 
 	        if new_key in  maps['key_banned']  or\
-	        	 infobox[key] in maps['value_banned']:
+	        	 infobox[key] in maps['value_banned'] or \
+	        	 '<!--' in infobox[key]:
 	        	continue
 
 	        ## Key cleaning
@@ -191,8 +199,8 @@ def clean_jsonvalues(infobox):
 
 	    return newjson
 	except Exception as e:
-	    print e,'[Line: 168 ]'
-	    return None
+		print e,'[Line: 168 ]'
+		return None
 
 
 

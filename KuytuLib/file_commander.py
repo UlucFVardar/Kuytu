@@ -9,7 +9,6 @@ def checkFilePath(mypath):
 	f = open(mypath,'w')
 	f.close()	
 def save_XML(XMLPath, indexPath, articleList ):
-
 	def prettyPrintXml(xmlFilePathToPrettyPrint):
 		from lxml import etree
 		assert xmlFilePathToPrettyPrint is not None
@@ -18,30 +17,31 @@ def save_XML(XMLPath, indexPath, articleList ):
 		document.write(xmlFilePathToPrettyPrint, pretty_print=True, encoding='utf-8')			
 	def generate_XML_page(article_object):
 		import XML_templates as tp
+
 		def give_paragrafXML(paragraph):
-			return tp.paragrafTemplate%paragraph
+			return tp.paragrafTemplate%re_make_xml_changes(paragraph)
 		def give_allArticleText(article_object):
 			try:
-				return tp.all_text%article_object.get_allBulkText()
+				return tp.all_text%re_make_xml_changes(article_object.get_allBulkText())
 			except Exception as e:
 				#print e
 				return ''
-		''' bura '''
+		##### ''' bura '''
 
 		paragraphList = []
 		for p in article_object.get_bulkParagraphs():
 			paragraphList.append(give_paragrafXML(p))
 		map = {}
-		map['ParagraphList_XMLtext'] = make_xml_changes('\n '.join(paragraphList))
-		map['Id'] = make_xml_changes(article_object.get_Id())
-		map['Title'] = make_xml_changes(article_object.get_Title())
-		map['infoBox_type'] = make_xml_changes(article_object.get_infoBox_type())
-		map['infoBoxText'] = make_xml_changes(article_object.get_infoBoxText())
-		map['allBulkText'] = make_xml_changes(article_object.get_allBulkText())
-		map['AllText_XMLText'] = make_xml_changes(give_allArticleText(article_object))
+		map['ParagraphList_XMLtext'] = '\n '.join(paragraphList)
+		map['Id'] = re_make_xml_changes(article_object.get_Id())
+		map['Title'] = re_make_xml_changes(article_object.get_Title())
+		map['infoBox_type'] = re_make_xml_changes(article_object.get_infoBox_type())
+		map['infoBoxText'] = re_make_xml_changes(article_object.get_infoBoxText())
+		map['allBulkText'] = re_make_xml_changes(article_object.get_allBulkText())
+		map['AllText_XMLText'] = give_allArticleText(article_object)
 
 		return tp.template%map
-	''' 2'''
+	######################################################## ''' 2''' ######################################################
 	if len (articleList) == 0 :
 		log = '!'+'-'*10+'  There is no Page to Save -- FileName(%31s)'%XMLPath.split('/')[-1]+'-'*10+'!'
 		print log
@@ -68,7 +68,7 @@ def save_XML(XMLPath, indexPath, articleList ):
 		else:
 			articleXML_text = article_object
 			indexFileString = (indexFileString%( 'Indexlenememiş' , 'Indexlenememiş', i+1 )).decode('utf-8')
-		f.write( articleXML_text )
+		f.write( articleXML_text.replace('<br />',',').replace('<br>',',') )
 
 		indexfile.write( indexFileString.encode('utf-8') )
 	f.write('</Pages>')		
@@ -77,6 +77,7 @@ def save_XML(XMLPath, indexPath, articleList ):
 	# ---- 
 	try:	
 		prettyPrintXml(XMLPath)
+		pass
 	except Exception as e:
 		print e
 		print '!! [prettyPrintXml] Execution Had Some Errors!!'
@@ -125,8 +126,6 @@ def make_xml_changes(text):
 
 
 def read_XML(XML_path):
-	
-
 	''' This funciton read XML data of Articles that has only InfoBox Data.'''
 	import xml.etree.ElementTree as ET
 	tree = ET.parse(XML_path)
@@ -136,23 +135,48 @@ def read_XML(XML_path):
 	for page in root.findall('Page'):
 		article_object = Article()
 		# Getting title, id, whole text of the article
-		article_object.set_id( id = re_make_xml_changes(page.find('Id').text) )
-		article_object.set_title( title = re_make_xml_changes(page.find('Title').text) )
-		article_object.set_infoBox_type( infoBox_type = re_make_xml_changes(page.find('InfoBoxType').text) )
-		article_object.set_infoBoxBulkText ( infoBox = re_make_xml_changes(page.find('InfoBox_BulkText').text) )
+		article_object.set_id( id = make_xml_changes(page.find('Id').text) )
+		article_object.set_title( title = make_xml_changes(page.find('Title').text) )
+		article_object.set_infoBox_type( infoBox_type = make_xml_changes(page.find('InfoBoxType').text) )
+		article_object.set_infoBoxBulkText ( infoBox = make_xml_changes(page.find('InfoBox_BulkText').text) )
 		try:
-			article_object.set_allBulkText(allBulkText = re_make_xml_changes(((page.find('Article_BulkTexts')).find('All_Text')).text) )
+			article_object.set_allBulkText(allBulkText = make_xml_changes(((page.find('Article_BulkTexts')).find('All_Text')).text) )
 			if article_object.get_allBulkText() == '' :
 				article_object.del_allBulkText()
 		except Exception as e:
 			print e
 
 		try:
-			article_object.set_bulkParagraphs( Paragraphs = [re_make_xml_changes(p.text) for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
+			article_object.set_bulkParagraphs( Paragraphs = [make_xml_changes(p.text) for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
 		except Exception as e:
 			print e
 		Articles.append(article_object)
 		#article_object.__string__()
 	return Articles
 
+
+
+import xlsxwriter
+def export_2_excel_for_check(file_name,articles_data):
+	'''
+		to see the regex result and errors in data
+	'''
+
+
+	# Create a workbook and add a worksheet.
+	workbook = xlsxwriter.Workbook(file_name)
+	for type_ in articles_data.keys():
+		worksheet = workbook.add_worksheet(type_)
+		row = 0
+		for a in articles_data[type_]:
+
+			for i,(key,value) in enumerate(a.get_cleanInfoBox().items()):
+
+			    #print entity
+			    col = 0
+			    # Iterate over the data and write it out row by row.
+			    worksheet.write(row, col,     key.decode('utf-8'))
+			    worksheet.write(row, col + 1 +i, value.decode('utf-8'))
+			row += 1
+	workbook.close()
 

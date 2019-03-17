@@ -18,8 +18,9 @@ print log.get_output_path()
 
 '''
 class KuytuLog():
-    def __init__(self,output_folder_name):
+    def __init__(self,output_folder_name,createType = 'w'):
         self.output_folder_name = output_folder_name
+        self.createType = createType
         self.create_files()
     def create_and_save_txt_file(self,file_name,text):
         #writing_type can be 'ab' or 'w'
@@ -34,10 +35,13 @@ class KuytuLog():
         if not os.path.isdir(mypath):
             os.makedirs(mypath)
         log_path = mypath+'/'+self.output_folder_name+'_Report.txt'
-        f= open(log_path,"w")
-        f.close()
         self.log_path = log_path
         self.output_path = mypath+'/'
+        if self.createType == 'r':
+            return
+        f= open(log_path,"w")
+        f.close()
+        
     
     def create_a_file_in_a_folder(self,folder_name,file_name,text):
         mypath =self.output_path+folder_name
