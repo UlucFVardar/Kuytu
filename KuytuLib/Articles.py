@@ -42,8 +42,12 @@ class Stack:
 class Article:
 	def __init__(self):
 		self.article_data = dict()
-		self.article_data['Article_BulkTexts'] = {}
 		self.article_data['Article_CleanTexts'] = {}
+		self.article_data['Article_CleanTexts']['Paragraphs'] = []
+
+
+
+		self.article_data['Article_BulkTexts'] = {}		
 		self.article_data['Article_BulkTexts']['Paragraphs'] = []
 		
 
@@ -102,9 +106,13 @@ class Article:
 	def get_bulkParagraphs(self):
 
 		return self.article_data['Article_BulkTexts']['Paragraphs']
+
 	def del_allBulkText(self):
 
 		del self.article_data['Article_BulkTexts']['allBulkText']
+	def set_cleanParagraphs(self,paragraphs):
+
+		self.article_data['Article_CleanTexts']['Paragraphs'] = paragraphs
 	def add_cleanParagraph(self,paragraph):
 		try:
 			self.article_data['Article_CleanTexts']['Paragraphs'].append( paragraph )
@@ -113,13 +121,17 @@ class Article:
 			self.article_data['Article_CleanTexts']['Paragraphs'].append( paragraph )        	
 	
 
-
+	def set_sentences(self,sentences):
+		
+		self.article_data['Article_CleanTexts']['Sentences'] = sentences
 	def add_sentences(self,sentence):
 		try:
 			self.article_data['Article_CleanTexts']['Sentences'].append( paragraph )
 		except Exception as e:
 			self.article_data['Article_CleanTexts']['Sentences'] = []
 			self.article_data['Article_CleanTexts']['Sentences'].append( paragraph )		
+
+
 	def __string__(self):
 		print json.dumps(self.article_data,indent = 4,ensure_ascii=False, encoding='utf8')#.encode('utf-8')
 	#----------------
