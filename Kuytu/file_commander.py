@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from Articles import Article 
 import json
+import XML_templates as tp
 
 def checkFilePath(mypath):
     import os
@@ -17,11 +18,12 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
         document = etree.parse(xmlFilePathToPrettyPrint, parser)
         document.write(xmlFilePathToPrettyPrint, pretty_print=True, encoding='utf-8')            
     def generate_XML_page(article_object,type_of_save = None):
-        import XML_templates as tp
+
 
         def give_paragrafXML(paragraph):
+
             return tp.paragrafTemplate%re_make_xml_changes(paragraph)
-        def give_allArticleText(article_object):
+        def give_allArticleBulkText(article_object):
             try:
                 return tp.all_text%re_make_xml_changes(article_object.get_allBulkText())
             except Exception as e:
@@ -33,51 +35,51 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
             except Exception as e:
                 #print e
                 return ''            
-        ##### ''' bura '''
+        ##### ''' bura ''' #################
 
-        paragraphList = []
-        paragraphList_clean = [] 
-        for p in article_object.get_bulkParagraphs():
-            paragraphList.append(give_paragrafXML(p))
-        for p in article_object.get_cleanParagraphs():
-            paragraphList_clean.append(give_paragrafXML(p))        
         map = {}
-        map['ParagraphList_XMLtext'] = '\n '.join(paragraphList)
         
-        try:
+        map['Id'] = re_make_xml_changes(article_object.get_Id()).encode('utf-8')
+        map['Title'] = re_make_xml_changes(article_object.get_Title()).encode('utf-8')
+        map['infoBox_type'] = re_make_xml_changes(article_object.get_infoBox_type()).encode('utf-8')        
+        
+        if type_of_save == 'clean':
+            paragraphList_clean = []
+            for p in article_object.get_cleanParagraphs():
+                paragraphList_clean.append(give_paragrafXML(p).strip())
             map['ParagraphList_XMLtext_clean'] = '\n '.join(paragraphList_clean)
-        except Exception as e:
-            pass        
-        map['Id'] = re_make_xml_changes(article_object.get_Id())
-        map['Title'] = re_make_xml_changes(article_object.get_Title())
-        map['infoBox_type'] = re_make_xml_changes(article_object.get_infoBox_type())
-        try:
-            map['infoBoxText'] = re_make_xml_changes(article_object.get_infoBoxText())
-        except Exception as e:
-            pass        
-        try:
-            map['allBulkText'] = re_make_xml_changes(article_object.get_allBulkText())
-        except Exception as e:
-            pass         
-        try:
-            map['AllText_XMLText'] = give_allArticleText(article_object)
-        except Exception as e:
-            pass               
-        
-        try:
+            map['infoBoxTextclean'] = re_make_xml_changes(json.dumps(article_object.get_cleanInfoBox(),indent = 4,ensure_ascii=False, encoding='utf8').encode('utf-8'))
             map['AllText_XMLText_clean'] = give_allArticleText_clean(article_object)        
-        except Exception as e:
-            pass
+        #---------
+        elif type_of_save == None:
+            paragraphList = []
+            for p in article_object.get_bulkParagraphs():
+                paragraphList.append(give_paragrafXML(p).strip())
+            map['ParagraphList_XMLtext'] = '\n '.join(paragraphList)
+            map['infoBoxText'] = re_make_xml_changes(article_object.get_infoBoxText())
+            map['allBulkText'] = re_make_xml_changes(article_object.get_allBulkText())
+            map['AllText_XMLText'] = give_allArticleBulkText(article_object)
         
+
+
+        #print json.dumps(map,indent = 4,ensure_ascii=False, encoding='utf8')
+        #----
+        #print tp.template_clean%map
+
+
         try:
-            map['infoBoxTextclean'] = re_make_xml_changes(json.dumps(article_object.get_cleanInfoBox(),indent = 4,ensure_ascii=False, encoding='utf8'))
+            if type_of_save == None:
+                return tp.template%map         
+            elif type_of_save == 'clean':
+                return tp.template_clean%map
         except Exception as e:
-            pass
-        
-        if type_of_save == None:
-             return tp.template%map         
-        elif type_of_save == 'clean':
-             return tp.template_clean%map
+            print 'patladi'
+            print '*'*10
+            print json.dumps(map,indent = 4,ensure_ascii=False, encoding='utf8')
+            print '-'*10
+            print '\n'*3
+            print e
+            return None
     ######################################################## ''' 2''' ######################################################
     if len (articleList) == 0 :
         log = '!'+'-'*10+'  There is no Page to Save -- FileName(%31s)'%XMLPath.split('/')[-1]+'-'*10+'!'
@@ -92,11 +94,15 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
 
     indexfile = open(indexPath,"w")    
     # -------
+    err_counter = 0
     indexData = []
     for i,article_object in enumerate(articleList):
         indexFileString = "%s#%s#%d\n"
         if type(article_object)==type(Article()): # article object 
-            articleXML_text =  generate_XML_page(article_object,type_of_save).encode('utf-8')
+            if type_of_save == 'clean':
+                articleXML_text =  generate_XML_page(article_object,type_of_save)
+            else:
+                articleXML_text =  generate_XML_page(article_object,type_of_save).encode('utf-8')
             indexFileString = indexFileString%(make_xml_changes(article_object.get_Id()), make_xml_changes(article_object.get_Title()), i+1 )
         elif type(article_object) == type(tuple()): 
             all_xml_test_as_string, Title, Id = article_object
@@ -105,6 +111,9 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
         else:
             articleXML_text = article_object
             indexFileString = (indexFileString%( 'Indexlenememiş' , 'Indexlenememiş', i+1 )).decode('utf-8')
+        if articleXML_text == None:
+            err_counter +=1
+            continue
         f.write( articleXML_text.replace('<br />',',').replace('<br>',',') )
 
         indexfile.write( indexFileString.encode('utf-8') )
@@ -118,7 +127,7 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
     except Exception as e:
         print e
         print '!! [prettyPrintXml] Execution Had Some Errors!!'
-    log =  '!'+'-'*2+' %6d Article Saved Successfully -- FileName(%31s)'%(len(articleList),XMLPath.split('/')[-1])+'-'*10+'!'
+    log =  '!'+'-'*2+' %6d Article Saved Successfully -- FileName(%31s)'%(len(articleList)-err_counter,XMLPath.split('/')[-1])+'-'*10+'!'
     print log
     return log
 
@@ -144,7 +153,7 @@ def save_Graph(output_path,data,min_repetition,title):
         fig.set_size_inches(20, 11)
         #plt.savefig(saving_path)
         plt.savefig(saving_path,format='eps', dpi=1000)
-        #plt.show()
+        plt.show()
 
     x_list = [x for x,y in data if y>=min_repetition ]
     y_list = [y for x,y in data if y>=min_repetition ]
@@ -156,9 +165,9 @@ def save_Graph(output_path,data,min_repetition,title):
 
 #-----
 def re_make_xml_changes(text):
-    return text.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;')
+    return text.replace('>','&gt;').replace('<','&lt;').replace('&','&amp;').replace('\n\n','').replace('\t','')
 def make_xml_changes(text):
-    return text.replace('&amp;','&').replace('&gt;','>').replace('&lt;','<')
+    return text.replace('&amp;','&').replace('&gt;','>').replace('&lt;','<').replace('\n\n','').replace('\t','')
 
 
 def read_XML(XML_path):
@@ -199,6 +208,7 @@ def save_txt_file(file_path,all_articles):
 
 import xlsxwriter
 def export_data_2_excel(file_name,articles_data,clomuns):
+    checkFilePath(file_name)
 
     # Create a workbook and add a worksheet.
     workbook = xlsxwriter.Workbook(file_name)

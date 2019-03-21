@@ -1,5 +1,4 @@
-paragrafTemplate = """<Paragraph>%s
-			</Paragraph>"""
+paragrafTemplate = """<Paragraph>%s</Paragraph>"""
 template = """
 	<Page>
 		<Id>%(Id)s</Id>
@@ -14,10 +13,8 @@ template = """
 				%(ParagraphList_XMLtext)s
 			</Paragraphs>				
 		</Article_BulkTexts>
-	</Page>	"""
-all_text = """	<All_Text>
-			%s
-		</All_Text>"""
+	</Page>"""
+all_text = """<All_Text>%s</All_Text>"""
         
 template_clean = """
 	<Page>
@@ -34,3 +31,5 @@ template_clean = """
 			</Paragraphs>				
 		</Article_CleanTexts>
 	</Page>	"""        
+
+

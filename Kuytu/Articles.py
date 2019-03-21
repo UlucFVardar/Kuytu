@@ -78,15 +78,17 @@ class Article:
         self.article_data['Article_BulkTexts']['allBulkText'] = allBulkText.strip()
 
 
+
+
     def set_bulkParagraphs(self,Paragraphs):
         self.article_data['Article_BulkTexts']['Paragraphs'] = Paragraphs
     def add_bulkParagraph(self,paragraph):
         paragraph = paragraph.strip()
         try:
-            self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph )
+            self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph.strip() )
         except Exception as e:
             self.article_data['Article_BulkTexts']['Paragraphs'] = []
-            self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph )
+            self.article_data['Article_BulkTexts']['Paragraphs'].append( paragraph.strip() )
 
     def get_Id(self):
 
@@ -137,8 +139,13 @@ class Article:
     
 
     def set_sentences(self,sentences):
-        
         self.article_data['Article_CleanTexts']['Sentences'] = sentences
+    
+    def set_cleanText(self,text):
+        self.article_data['Article_CleanTexts']['allText'] = text
+    
+
+
     def add_sentences(self,sentence):
         try:
             self.article_data['Article_CleanTexts']['Sentences'].append( paragraph )

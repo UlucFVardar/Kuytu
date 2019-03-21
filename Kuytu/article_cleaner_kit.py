@@ -10,7 +10,7 @@
 
 import re
 import json
-
+import copy
 
 def configure_BK_fieldsMaps():
     ''' User can easly add a new field in maps or banned fields here, 
@@ -160,100 +160,93 @@ def clean_InfoBoxBulk( Bulk_InfoBoxText ):
             return temp
         except Exception as e:
             return None
+    def clean_jsonvalues(infobox):
+        if infobox == None:
+            return None
+        maps = configure_BK_fieldsMaps()
+        try:
+            newjson = {}
+            for key in infobox.keys():
+                infobox[key] = infobox[key].encode('utf8')
+                new_key = key.encode('utf8').replace(' ','').replace('_','').lower()
+
+                # banned key 
+                if new_key in  maps['key_banned']  or\
+                     infobox[key] in maps['value_banned'] or \
+                     '<!--' in infobox[key]:
+                    continue
+
+                ## Key cleaning
+                new_key = key_map(new_key,maps)
+
+                ## Value cleaning
+                new_value = infobox[key].replace("'",'').replace('\"','')
+                if new_key != 'ad':
+                    new_value =  clean_pipes(new_value).strip()
+                else:
+                    new_value =  remove_brackets_with_text(new_value)
+                    if new_value == '':
+                        return None
+                
+                if new_key == 'meslek' or  new_key == 'dalı' or  new_key == 'alanı':
+                    parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
+                    parts = map(lambda x: x , parts)
+                    if len(parts)>=2:
+                        new_value = ', '.join(parts[:-1]) +' ve '+ parts[-1]
+                    else:
+                        new_value = ', '.join(parts)
+                    
+
+                if new_key == 'ulus' or  new_key == 'doğumyeri'  or  new_key == 'ülke':
+                    if 'ayraksimge' in new_value:
+                        new_value = clean_double_curly_brackets(new_value)
+                    new_value =  clean_pipes(new_value).strip()
+                    if maps['county_map'].get(new_value,'') !='':
+                        new_value = maps['county_map'].get(new_value,'')
+
+                if new_key == 'çağ':
+                    new_value = new_value.replace(' felsefesi','')
+
+
+                if new_key == 'tarz':
+                    new_value = new_value.replace('flatlist|','')
+                if new_key == 'oyunstili':
+                    if new_value.find(';') != -1:
+                        new_value = new_value[:new_value.find(';')]
+                
+                new_value =  clean_tags(new_value)
+                new_value =  remove_brackets(new_value)                 
+                
+                if 'tarih' in new_key:
+                    new_value =  date_map(new_value.strip(),maps)
+                
+                newjson[new_key] = clean_normal_brackets(new_value)#.title()
+                
+            return newjson
+        except Exception as e:
+            print e,'[Line: 168 ]'
+            return None            
+    #################################### ------------ ############################3        
     Bulk_InfoBoxText = step1(Bulk_InfoBoxText)
     Bulk_InfoBoxText = step2(Bulk_InfoBoxText)
+    
     Bulk_InfoBoxText = step3(Bulk_InfoBoxText)
+
     Bulk_InfoBoxText = clean_jsonvalues(Bulk_InfoBoxText)
-    #print json.dumps(Bulk_InfoBoxText,indent=4,ensure_ascii=False, encoding='utf8')
+    
     return Bulk_InfoBoxText
 
 
 
 
 
-#----------
+#-----------------------------------------------------------------------------FOR 'clean_jsonvalues'
 # . ['adı','isim','ismi','adi','name','karakteradı'] --> 'ad'
 def key_map(data,maps ):
     for maped_value in maps['value_maps'].keys():
         if data in maps['value_maps'][maped_value]:
             return maped_value
     return data
-
-
-# for clean infoBox
-def clean_jsonvalues(infobox):
-    if infobox == None:
-        return None
-    maps = configure_BK_fieldsMaps()
-    try:
-        newjson = {}
-        for key in infobox.keys():
-            infobox[key] = infobox[key].encode('utf8')
-            new_key = key.encode('utf8').replace(' ','').replace('_','').lower()
-
-            # banned key 
-            if new_key in  maps['key_banned']  or\
-                 infobox[key] in maps['value_banned'] or \
-                 '<!--' in infobox[key]:
-                continue
-
-            ## Key cleaning
-            new_key = key_map(new_key,maps)
-
-            ## Value cleaning
-            new_value = infobox[key].replace("'",'').replace('\"','')
-            if new_key != 'ad':
-                new_value =  clean_pipes(new_value).strip()
-            else:
-                new_value =  remove_brackets_with_text(new_value)
-                if new_value == '':
-                    return None
-            
-            
-        
-            if new_key == 'meslek' or  new_key == 'dalı' or  new_key == 'alanı':
-                parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
-                parts = map(lambda x: x , parts)
-                if len(parts)>=2:
-                    new_value = ', '.join(parts[:-1]) +' ve '+ parts[-1]
-                else:
-                    new_value = ', '.join(parts)
-                
-
-            if new_key == 'ulus' or  new_key == 'doğumyeri'  or  new_key == 'ülke':
-                if 'ayraksimge' in new_value:
-                    new_value = clean_double_curly_brackets(new_value)
-                new_value =  clean_pipes(new_value).strip()
-                if maps['county_map'].get(new_value,'') !='':
-                    new_value = maps['county_map'].get(new_value,'')
-
-            if new_key == 'çağ':
-                new_value = new_value.replace(' felsefesi','')
-
-
-            if new_key == 'tarz':
-                new_value = new_value.replace('flatlist|','')
-            if new_key == 'oyunstili':
-                if new_value.find(';') != -1:
-                    new_value = new_value[:new_value.find(';')]
-            
-            new_value =  clean_tags(new_value)
-            new_value =  remove_brackets(new_value)                 
-            
-            if 'tarihi' in new_key:
-                new_value =  date_map(new_value.strip(),maps)
-
-
-
-            
-            newjson[new_key] = clean_normal_brackets(new_value)#.title()
-
-        return newjson
-    except Exception as e:
-        print e,'[Line: 168 ]'
-        return None
-
-
 
 def clean_normal_brackets(data):
     pattern= r'\([^\(|\)]*\)'
@@ -301,6 +294,7 @@ def clean_pipes( data):
     except Exception as e:
         return data        
 
+
 # . <br> --> ,
 def clean_tags( data):
     try:
@@ -318,12 +312,17 @@ def clean_tags( data):
 # . 123 ---> 123       
 # . 2188 2 2 --->  2 Şubat 2188
 # . 2188.2.2 --->  2 Şubat 2188
-import copy
+
+def test(a,date_value):
+    if 'M.Ö. 570' in date_value:
+        print 'burda',a
 def date_map( date_value,maps ):
     date_value = '{{'+date_value+'}}'
     if '{{bilinmiyor}}' == date_value:
         return None
 
+
+    test(1,date_value)
     orj = copy.deepcopy(date_value)
     converted_date = date_value
     try : 
@@ -331,7 +330,9 @@ def date_map( date_value,maps ):
         value = [int(w.replace('|', '')) for w in value]  # clean pipes |
         if len(value) == 3 or len(value) == 4:
             converted_date = "%s %s %s"%(value[2],  maps['month'][value[1]-1],value[0])
+            test(2,date_value)
             return converted_date
+
         elif len(value) == 6 or len(value) == 7:
             year1 = int(value[0])
             year2 = int(value[0+3])
@@ -340,14 +341,17 @@ def date_map( date_value,maps ):
                 return converted_date
             else:
                 converted_date = "%s %s %s"%(value[2+3],  maps['month'][value[1+3]-1],value[0+3])
+                test(3,date_value)
                 return converted_date
         elif len(value) == 1:
             if len(str(value[0])) == 4 or len(value[0]) ==3:
                 converted_date = str(value[0])
+                test(4,date_value)
                 return converted_date
     except Exception as e:
         #print e
         pass
+    test(5,date_value)
     try:
         '''
         value = orj                
@@ -357,6 +361,7 @@ def date_map( date_value,maps ):
                 converted_date = str(value.encode('utf-8'))
                 return converted_date
         '''
+
         value = orj.replace(',',' ').replace('  ',' ').replace('.',' ')
         if len(value.split(' ')) == 3:
             if value.split(' ')[1].decode('utf-8') in  month:
@@ -364,11 +369,14 @@ def date_map( date_value,maps ):
             if value.split(' ')[1].isdigit():
                 value = value.split(' ')
                 converted_date = str(value[2])+' '+ str( month[value[1]-1]) + ' ' + str(value[0])
-        return converted_date            
+            return converted_date            
+        test(6,date_value)    
     except Exception as e:
         #print e
         pass
+    test(7,date_value)
 
+    print orj,'burdaa'
     # path {{Ölüm yılı ve yaşı|1428|1401}}
     try:
         reg = "[^\|]*ve yaşı\|(\d*)\|\d*"
@@ -411,7 +419,16 @@ def date_map( date_value,maps ):
         match = re.search(r"\{\{(\d*) civarı\}\}", orj)
         return match.group(1)  
     except Exception as e:
-        pass    
+        pass
+    # {{MÖ 245}}
+    # {{M.Ö 234}}
+    try:
+        #reg = "\{\{[M]|[M.][Ö]|[Ö.]\s(\d*)\}\}"
+        match = re.search(r"\{\{M.*Ö.* (\d*)\}\}", orj)
+        return 'M.Ö. '+str(match.group(1))
+    except Exception as e:
+        pass
+
 
     if len(orj) > 40:
         return None
@@ -420,9 +437,7 @@ def date_map( date_value,maps ):
 
     return None
     #----------------------------------------------
-
-
-#--------------------
+#-----------------------------------------------------------------------------------------
 
 
 def clean_Bulk_Text( Bulk_Text ):
@@ -544,7 +559,7 @@ def clean_double_equation_mark( data): #==
     except:
         return data
 
-
+#-------------- for text
 def process_bulk_text(text):
     
     def clean_dosya( data):
@@ -602,14 +617,31 @@ def process_bulk_text(text):
     
     return text
 
-def clean_pharagraphs(article):
-    cleaned_paragraphs = []
+def clean_bulk_text(text):
+    if text == None:
+        return None    
+    elif len(text) < 3 :
+        return None
+    cleaned_text = process_bulk_text(text).encode('utf-8').decode('utf-8').encode('utf-8')
+    if cleaned_text == None:
+        return None
+    elif len(cleaned_text) < 3:
+        return None
+    return cleaned_text
+
+def clean_paragraphs(article):
+    tmp = []
     if len(article) > 0:
         for paragraph in article:
-            cleanedParagraph = process_bulk_text(paragraph).encode('utf-8').decode('utf-8').encode('utf-8')
+            try:
+                cleanedParagraph = process_bulk_text(paragraph).encode('utf-8').decode('utf-8').encode('utf-8')
+            except Exception as e:
+                continue
             if cleanedParagraph == None:
                 continue
+            elif len(cleanedParagraph) < 3:
+                continue
             else:
-                cleaned_paragraphs.append(cleanedParagraph)
+                tmp.append(cleanedParagraph)
                 
-    return cleaned_paragraphs
+    return tmp
