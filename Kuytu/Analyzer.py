@@ -69,6 +69,8 @@ def save_count_data( path, total_count_data, count_data, total_first_n, subcat_f
             sub_cat_file.write(string)
         sub_cat_file.close()
 import copy
+
+
 def hold_interested_datafields(interested_datafields,seperated_articles):
     seperated_articles = copy.deepcopy(seperated_articles)
     for type_ in seperated_articles.keys():
@@ -82,8 +84,6 @@ def hold_interested_datafields(interested_datafields,seperated_articles):
             for key in interested_datafields[type_]:
                 if bk.get(key,'') != '':
                     new_bk[key] = bk[key]
-                
-                
             seperated_articles[type_][i].set_infoBox_clean(new_bk)
     return seperated_articles
 
