@@ -58,17 +58,17 @@ def configure_BK_fieldsMaps():
 
 
 
-    value_maps = {     'ad' :                [   'adı'        ,
-                                        'isim'        ,
-                                        'ismi'        ,
-                                        'adi'        ,
-                                        'name'        ,
+    value_maps = {  'ad' :          [   'adı'       ,
+                                        'isim'      ,
+                                        'ismi'      ,
+                                        'adi'       ,
+                                        'name'      ,
                                         'karakteradı'],
 
-                    'doğumtarihi' : [    'dogumtarihi','birthdate'],
+                    'doğumtarihi' : [   'dogumtarihi','birthdate'],
                     'doğumyeri'   : [   'birthplace' ,'location'],
-                    'meslek'      : [    'mesleği'     ],
-                    'ulus'          : [   'nationality' ]
+                    'meslek'      : [   'mesleği'    ],
+                    'ulus'        : [   'nationality' ]
                     }
     county_map = {
                 "KOR" :"Kore",
@@ -82,7 +82,7 @@ def configure_BK_fieldsMaps():
                 "CHN" : "Çin",
                 "UK"  : "Büyük Britanya",
                 "ENG" : "İngiltere",
-                 "SVK" :"Slovakya",
+                "SVK" :"Slovakya",
                 "SWE" : "İsviçre",
                 "AUS" : "Avusturalya",
                 "SSCB":"Sovyetler Birliği",
@@ -190,25 +190,27 @@ def clean_jsonvalues(infobox):
         for key in infobox.keys():
             infobox[key] = infobox[key].encode('utf8')
             new_key = key.encode('utf8').replace(' ','').replace('_','').lower()
-            
+
             # banned key 
             if new_key in  maps['key_banned']  or\
-                infobox[key] in maps['value_banned'] or \
-                '<!--' in infobox[key]:
+                 infobox[key] in maps['value_banned'] or \
+                 '<!--' in infobox[key]:
                 continue
-            
+
             ## Key cleaning
             new_key = key_map(new_key,maps)
 
-            # Value cleaning
+            ## Value cleaning
             new_value = infobox[key].replace("'",'').replace('\"','')
             if new_key != 'ad':
                 new_value =  clean_pipes(new_value).strip()
             else:
                 new_value =  remove_brackets_with_text(new_value)
                 if new_value == '':
-                    return None            
-
+                    return None
+            
+            
+        
             if new_key == 'meslek' or  new_key == 'dalı' or  new_key == 'alanı':
                 parts = new_value.replace(' ,',',').replace(', ',',').replace(' , ',',').split(',')
                 parts = map(lambda x: x , parts)
@@ -221,10 +223,10 @@ def clean_jsonvalues(infobox):
             if new_key == 'ulus' or  new_key == 'doğumyeri'  or  new_key == 'ülke':
                 if 'ayraksimge' in new_value:
                     new_value = clean_double_curly_brackets(new_value)
-                    new_value =  clean_pipes(new_value).strip()
+                new_value =  clean_pipes(new_value).strip()
                 if maps['county_map'].get(new_value,'') !='':
-                    new_value = maps['county_map'].get(new_value,'') 
-                    
+                    new_value = maps['county_map'].get(new_value,'')
+
             if new_key == 'çağ':
                 new_value = new_value.replace(' felsefesi','')
 
@@ -234,14 +236,18 @@ def clean_jsonvalues(infobox):
             if new_key == 'oyunstili':
                 if new_value.find(';') != -1:
                     new_value = new_value[:new_value.find(';')]
-
+            
             new_value =  clean_tags(new_value)
-            new_value =  remove_brackets(new_value)                       
-
+            new_value =  remove_brackets(new_value)                 
+            
             if 'tarihi' in new_key:
                 new_value =  date_map(new_value.strip(),maps)
-            newjson[new_key] = clean_normal_brackets(new_value)#.title()
+
+
+
             
+            newjson[new_key] = clean_normal_brackets(new_value)#.title()
+
         return newjson
     except Exception as e:
         print e,'[Line: 168 ]'
@@ -255,7 +261,7 @@ def clean_normal_brackets(data):
         data = re.sub(pattern,"",data)
         return data.strip()
     except Exception as e:
-        return data    
+        return data 
 
 # . [[asdasda]], deneme ---> , deneme
 def remove_brackets_with_text( data):
@@ -407,7 +413,7 @@ def date_map( date_value,maps ):
     except Exception as e:
         pass    
 
-    if len(orj)    > 40:
+    if len(orj) > 40:
         return None
     if 'MÖ' in orj:
         return orj[2:-2]
@@ -529,7 +535,7 @@ def clean_triple_quoates( data):
     try:
         return data.replace("'''",'').replace("''",'').replace('"','').replace("\'\'\'",'').replace("''",'')
     except:
-        return data    
+        return data 
 
 
 def clean_double_equation_mark( data): #==
@@ -538,3 +544,72 @@ def clean_double_equation_mark( data): #==
     except:
         return data
 
+
+def process_bulk_text(text):
+    
+    def clean_dosya( data):
+        try:
+            return re.sub(r"\[\[Dosya.*\]\]","",data)
+        except:
+            return data
+        
+    def clean_pipes_in_double_square_brackets( data):
+        try:
+            return re.sub(r"\[\[[^\[\{]*\|","",data).replace('[','').replace(']','')
+        except:
+            return data.replace(']','').replace('[','')
+        
+    def clean_tags_regex(data):
+        try:
+            data = re.sub(r"((<br />.*?<br />|<br />)|(<br>.*?<br>|<br>))","",data)
+        except:
+            pass
+        try:
+            return re.sub(r"<.*?>.*</.*?>|<.*?</.*?>|<.*?/>","",data)
+        except:
+            return data
+        
+    def clean_double_curly_brackets(data):
+        try:
+            # This comment is just for backup
+            # old version of regex \(({{.*?(.|\s).*?}})\)|({{.*?(.|\s).*?}})
+            return re.sub(r"\(({{.*?(.|\s).*?}},|{{.*?(.|\s).*?}};|{{.*?(.|\s).*?}})\)|({{.*?(.|\s).*?}},|{{.*?(.|\s).*?}};|{{.*?(.|\s).*?}})","",data) 
+        except:
+            return data
+    
+    def clean_triple_quoates(data):
+        try:
+            return data.replace("'''",'').replace("''",'').replace('"','')
+        except:
+            return data
+    
+    def clean_stars(data):
+        try:
+            return data.replace("*","")
+        except:
+            return data
+
+    text = clean_dosya(text) # delete '[[Dosya.*]]'
+    text = clean_tags_regex(text) # delete <.*?>.*?</.*?> TAGS
+    text = clean_pipes_in_double_square_brackets(text) # [[ <remove this> | <hold this one> ]] 
+    text = clean_double_curly_brackets(text) # delete {{...}} double curly brackets
+    # clean_round_brackets_except_with_birth_and_death
+    text = clean_triple_quoates(text) # remove ' """ ' and  " ''' " in sentence
+    text = clean_stars(text) # delete '*' stars in text
+    
+    if text == '':
+        return None
+    
+    return text
+
+def clean_pharagraphs(article):
+    cleaned_paragraphs = []
+    if len(article) > 0:
+        for paragraph in article:
+            cleanedParagraph = process_bulk_text(paragraph).encode('utf-8').decode('utf-8').encode('utf-8')
+            if cleanedParagraph == None:
+                continue
+            else:
+                cleaned_paragraphs.append(cleanedParagraph)
+                
+    return cleaned_paragraphs
