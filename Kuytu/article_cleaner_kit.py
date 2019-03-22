@@ -177,7 +177,7 @@ def clean_InfoBoxBulk( Bulk_InfoBoxText ):
                     continue
 
                 ## Key cleaning
-                new_key = key_map(new_key,maps)
+                new_key = key_map(new_key,maps).strip()
 
                 ## Value cleaning
                 new_value = infobox[key].replace("'",'').replace('\"','')
@@ -426,12 +426,17 @@ def date_map( date_value,maps ):
         return 'M.Ö. '+str(match.group(1))
     except Exception as e:
         pass
-
+    try:
+        #reg = "\{\{[M]|[M.][Ö]|[Ö.]\s(\d*)\}\}"
+        match = re.search(r"\{\{M.*S.* (\d*)\}\}", orj)
+        return 'M.S. '+str(match.group(1))
+    except Exception as e:
+        pass
 
     if len(orj) > 40:
         return None
 
-    return orj
+    return orj[2:-2]
     #----------------------------------------------
 #-----------------------------------------------------------------------------------------
 

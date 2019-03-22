@@ -42,7 +42,7 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
         map['Id'] = re_make_xml_changes(article_object.get_Id()).encode('utf-8')
         map['Title'] = re_make_xml_changes(article_object.get_Title()).encode('utf-8')
         map['infoBox_type'] = re_make_xml_changes(article_object.get_infoBox_type()).encode('utf-8')        
-        
+        #print 'burda11'
         if type_of_save == 'clean':
             paragraphList_clean = []
             for p in article_object.get_cleanParagraphs():
@@ -55,11 +55,15 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
             paragraphList = []
             for p in article_object.get_bulkParagraphs():
                 paragraphList.append(give_paragrafXML(p).strip())
-            map['ParagraphList_XMLtext'] = '\n '.join(paragraphList)
-            map['infoBoxText'] = re_make_xml_changes(article_object.get_infoBoxText())
-            map['allBulkText'] = re_make_xml_changes(article_object.get_allBulkText())
-            map['AllText_XMLText'] = give_allArticleBulkText(article_object)
-        
+            #print 'burda112'
+            map['ParagraphList_XMLtext'] = '\n '.join(paragraphList).encode('utf-8')
+            #print 'burda113'
+            map['infoBoxText'] = re_make_xml_changes(article_object.get_infoBoxText()).encode('utf-8')
+            #print 'burda114'
+            map['allBulkText'] = re_make_xml_changes(article_object.get_allBulkText()).encode('utf-8')
+            #print 'burda115'
+            map['AllText_XMLText'] = give_allArticleBulkText(article_object).encode('utf-8')
+            #print 'burda116'
 
 
         #print json.dumps(map,indent = 4,ensure_ascii=False, encoding='utf8')
@@ -102,7 +106,9 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
             if type_of_save == 'clean':
                 articleXML_text =  generate_XML_page(article_object,type_of_save)
             else:
-                articleXML_text =  generate_XML_page(article_object,type_of_save).encode('utf-8')
+                #print 'burda1'
+                articleXML_text =  generate_XML_page(article_object,type_of_save).decode('utf-8').encode('utf-8') 
+                #print 'burda2'
             indexFileString = indexFileString%(make_xml_changes(article_object.get_Id()), make_xml_changes(article_object.get_Title()), i+1 )
         elif type(article_object) == type(tuple()): 
             all_xml_test_as_string, Title, Id = article_object
@@ -114,8 +120,9 @@ def save_XML(XMLPath, indexPath, articleList ,type_of_save = None):
         if articleXML_text == None:
             err_counter +=1
             continue
-        f.write( articleXML_text.replace('<br />',',').replace('<br>',',') )
-
+        #print 'burda3'
+        f.write( articleXML_text.replace('<br />',',').replace('<br>',','))
+        #print 'burda4'
         indexfile.write( indexFileString.encode('utf-8') )
     f.write('</Pages>')        
     f.close()
