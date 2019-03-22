@@ -322,7 +322,7 @@ def date_map( date_value,maps ):
         return None
 
 
-    test(1,date_value)
+    
     orj = copy.deepcopy(date_value)
     converted_date = date_value
     try : 
@@ -330,7 +330,7 @@ def date_map( date_value,maps ):
         value = [int(w.replace('|', '')) for w in value]  # clean pipes |
         if len(value) == 3 or len(value) == 4:
             converted_date = "%s %s %s"%(value[2],  maps['month'][value[1]-1],value[0])
-            test(2,date_value)
+            
             return converted_date
 
         elif len(value) == 6 or len(value) == 7:
@@ -341,17 +341,17 @@ def date_map( date_value,maps ):
                 return converted_date
             else:
                 converted_date = "%s %s %s"%(value[2+3],  maps['month'][value[1+3]-1],value[0+3])
-                test(3,date_value)
+                
                 return converted_date
         elif len(value) == 1:
             if len(str(value[0])) == 4 or len(value[0]) ==3:
                 converted_date = str(value[0])
-                test(4,date_value)
+                
                 return converted_date
     except Exception as e:
         #print e
         pass
-    test(5,date_value)
+    
     try:
         '''
         value = orj                
@@ -370,13 +370,11 @@ def date_map( date_value,maps ):
                 value = value.split(' ')
                 converted_date = str(value[2])+' '+ str( month[value[1]-1]) + ' ' + str(value[0])
             return converted_date            
-        test(6,date_value)    
     except Exception as e:
         #print e
         pass
-    test(7,date_value)
 
-    print orj,'burdaa'
+    #print orj,'burdaa'
     # path {{Ölüm yılı ve yaşı|1428|1401}}
     try:
         reg = "[^\|]*ve yaşı\|(\d*)\|\d*"
@@ -432,10 +430,8 @@ def date_map( date_value,maps ):
 
     if len(orj) > 40:
         return None
-    if 'MÖ' in orj:
-        return orj[2:-2]
 
-    return None
+    return orj
     #----------------------------------------------
 #-----------------------------------------------------------------------------------------
 
