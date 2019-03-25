@@ -30,14 +30,19 @@ log = KuytuLog('BlackBoxCode')
 # ----------- WIKI DUMP XML PARSE ------------------------------- Execution ----
 # XML Getting Memory
 print '-'*10 + 'WIKI DUMP XML GETTING MEMORY' + '-'*10 
-#wdp = WikiDumpParser('./Data/wikidump.xml')
-wdp = WikiDumpParser('./Data/wikidump.xml') # A Part of The Orjinal WIKI-DUMP Data
+wdp = WikiDumpParser('./Data/wikidump.xml')
+#wdp = WikiDumpParser('./Data/part.xml') # A Part of The Orjinal WIKI-DUMP Data
+
+
 
 # Starting to parse all page in XML file
 print '-'*14 + 'WIKI DUMP PARSE START' + '-'*13
 wdp.extract_pages(StoreAllText = False, NumberofParagraph = 2 )
 # ------------------------------------------------------------------------------
 ```
+
+    ----------WIKI DUMP XML GETTING MEMORY----------
+    --------------WIKI DUMP PARSE START-------------
 
 
 ##### After Seperation saving Seperation Log to our 'Kuytu_log' file
@@ -65,6 +70,10 @@ K_fc.save_Graph( output_path = output_path
 log.logging('Uniq-BK-Types-Hit-Counts-Graph(>100) Saved')
 # ------------------------------------------------------------------------------
 ```
+
+
+    <Figure size 2000x1100 with 1 Axes>
+
 
 ##### Save The Seperated Pages in 3 Group
     -> Template of the returnin valu of wdp.get_all_articles()
@@ -96,14 +105,24 @@ nonStandartPagesIndexPath = output_path + 'BulkData/NonStandartPages_bulkXML_ind
 l3 = K_fc.save_XML(nonStandartPagesXMLPath, nonStandartPagesIndexPath, allArticles['NonStandart_articles_list'] )
 
 log.logging([l1,l2,l3])  ## Save '.save_XML' log.
+
 # ------------------------------------------------------------------------------
 ```
+
+    xmlParseCharRef: invalid xmlChar value 55296, line 23152, column 36 (line 23152)
+    !! [prettyPrintXml] Execution Had Some Errors!!
+    !-- 690516 Article Saved Successfully -- FileName(withOUTInfoBoxPages_bulkXML.xml)----------!
+    !-- 180223 Article Saved Successfully -- FileName(   withInfoBoxPages_bulkXML.xml)----------!
+    xmlParseCharRef: invalid xmlChar value 55357, line 15669, column 514 (line 15669)
+    !! [prettyPrintXml] Execution Had Some Errors!!
+    !--   3157 Article Saved Successfully -- FileName(   NonStandartPages_bulkXML.xml)----------!
+
 
 ---
 ### First part of the Wiki Full Extraction is finished
 
 #### The Outputs are ;
-![alttext](./ss/Output_of_seperation.png)
+![alttext](https://raw.githubusercontent.com/UlucFVardar/Kuytu/master/Examples/Output_of_seperation.png)
 
 
 ---
@@ -118,33 +137,13 @@ log.logging([l1,l2,l3])  ## Save '.save_XML' log.
 import Kuytu.Analyzer as Analyzer
 from collections import Counter
 ```
+
+
+```python
 ##### When code runs from begining
 Articles_with_BK = allArticles['withInfoBox_articles_list']
 allArticles = None
-
-```python
-'''
-
-log = KuytuLog('BlackBoxCode','r')
-output_path = log.get_output_path()
-
-StandartPagesXMLPath = output_path + 'BulkData/withInfoBoxPages_bulkXML.xml'
-
-Articles_with_BK = K_fc.read_XML(StandartPagesXMLPath)
-
-
-#---------
-StandartPagesXMLPath = output_path + 'test_data.xml'
-Articles_with_BK = K_fc.read_XML(StandartPagesXMLPath)
-
-'''
-#---------
-
-pass
 ```
-
-
-```python
 ##### when code starts to run here 
 from Kuytu.wikiLog import KuytuLog
 from Kuytu.WikiDumpParser import WikiDumpParser
@@ -159,8 +158,6 @@ StandartPagesXMLPath = '../test_data.xml'
 #StandartPagesXMLPath = output_path + 'BulkData/withInfoBoxPages_bulkXML.xml'
 
 Articles_with_BK = K_fc.read_XML(StandartPagesXMLPath)
-```
-
 ##### Saving  Histogram of Clean DA's owned Articles
 
 
@@ -174,14 +171,14 @@ output_path = log.get_output_path()
 K_fc.save_Uniq_InfoBoxTypes( output_path + '/Uniq-BK-Types-Hit-Counts-Graph-Clean(>100).txt', uniq_types_histogram )
 K_fc.save_Graph( output_path = output_path
                 ,data = uniq_types_histogram
-                ,min_repetition = 2
+                ,min_repetition = 100
                 ,title = 'Uniq-BK-Types-Hit-Counts-Graph-Clean(>100)' )
 log.logging('Uniq-BK-Types-Hit-Counts-Graph-Clean(>100) Saved')
 
 ```
 
 
-    <Figure size 2000x1100 with 1 Axes>
+![png](output_20_0.png)
 
 
 ---
@@ -209,7 +206,7 @@ print prt_log
 
 ```
 
-    #Articles interested categories 76
+    #Articles interested categories 53658
 
 
 ---
@@ -241,17 +238,6 @@ for i,article in enumerate(Interested_articles_with_BK):
 # Eliminate None parsed articles
 Interested_articles_with_BK_clean =  filter(lambda a: a.get_cleanInfoBox() != None , Interested_articles_with_BK)
 ```
-
-    burda 1
-    burda 5
-    burda 6
-    burda 7
-    {{M.Ö. 570}} burdaa
-    {{M.Ö. 495}} burdaa
-    {{26 Ağustos veya Doğum tarihi|1451|10|31}} burdaa
-    {{4 Ekim 1919 ve 2 Ekim 1920 arasında}} burdaa
-    {{MÖ 469}} burdaa
-
 
 ##### Paragraph Cleaning
 
@@ -287,10 +273,18 @@ for i,article in enumerate(Interested_articles_with_BK_clean):
 
 
 ```python
-###
-#
-# SENTENCES
-pass
+from Kuytu import Zemberek_Runner  
+Zemberek_Runner.create_sentence_splittler_input_text(Articles_with_BK)
+```
+    RUN Java ON TERMINAL // Jupyter notebook  not allow to export zemberek lib
+
+from Kuytu import Zemberek_Runner  
+Zemberek_Runner.create_sentences()
+
+```python
+from Kuytu import Zemberek_Runner  
+
+Zemberek_Runner.re_read_Sentences(Articles_with_BK)
 ```
 
 
@@ -300,7 +294,7 @@ log.logging(prt_log)
 print prt_log    
 ```
 
-    #Articles parsed clean(InfoBoxes-Paragraphs-AllText-Sentences) 75
+    #Articles parsed clean(InfoBoxes-Paragraphs-AllText-Sentences) 53503
 
 
 ---
@@ -469,7 +463,7 @@ log.logging(['CLEAN DATA SAVED TO XML with INDEX',l2])
 
 ```
 
-    !--     73 Article Saved Successfully -- FileName(             clean_data_XML.xml)----------!
+    !--  53025 Article Saved Successfully -- FileName(             clean_data_XML.xml)----------!
 
 
 #### Text save

@@ -562,6 +562,16 @@ def clean_double_equation_mark( data): #==
 
 #-------------- for text
 def process_bulk_text(text):
+    """Clean given input text
+        
+        Parameters:
+            text -> str
+                A dirty string that includes xml stuffs
+        
+        Returns:
+            text ->
+        
+    """
     
     def clean_dosya( data):
         try:

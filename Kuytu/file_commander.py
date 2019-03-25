@@ -190,18 +190,22 @@ def read_XML(XML_path):
         article_object.set_id( id = make_xml_changes(page.find('Id').text) )
         article_object.set_title( title = make_xml_changes(page.find('Title').text) )
         article_object.set_infoBox_type( infoBox_type = make_xml_changes(page.find('InfoBoxType').text) )
-        article_object.set_infoBoxBulkText ( infoBox = make_xml_changes(page.find('InfoBox_BulkText').text) )
+        try:
+            article_object.set_infoBoxBulkText ( infoBox = make_xml_changes(page.find('InfoBox_BulkText').text) )
+        except Exception as e:
+            pass
+
         try:
             article_object.set_allBulkText(allBulkText = make_xml_changes(((page.find('Article_BulkTexts')).find('All_Text')).text) )
             if article_object.get_allBulkText() == '' :
                 article_object.del_allBulkText()
         except Exception as e:
-            print e
+            pass
 
         try:
             article_object.set_bulkParagraphs( Paragraphs = [make_xml_changes(p.text) for p in ((page.find('Article_BulkTexts')).find('Paragraphs')).findall('Paragraph')] )
         except Exception as e:
-            print e
+            pass
         Articles.append(article_object)
         #article_object.__string__()
     return Articles
