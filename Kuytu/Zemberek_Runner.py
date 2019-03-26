@@ -32,32 +32,38 @@ def get_sentences():
                 d_flag = False
                 o_flag = False
                 lngth = len(line_parts)
-                for j, part in enumerate(line_parts):
-                    try:
-                        if part.endswith('o.') and o_flag == False:
-                            first_sentence += line_parts[j+1]
-                            o_flag = True
+                try:
+                    for j, part in enumerate(line_parts):
 
-                        if d_flag == True:
-                            if o_flag == True:
-                                try:
-                                    second_sentence = line_parts[3]
-                                except:
-                                    second_sentence = 'None'
+                        try:
+                            if part.endswith('o.') and o_flag == False:
+                                first_sentence += line_parts[j+1]
+                                o_flag = True
+
+                            if d_flag == True:
+                                if o_flag == True:
+                                    try:
+                                        second_sentence = line_parts[3]
+                                    except:
+                                        second_sentence = 'None'
+                                else:
+                                    try:
+                                        second_sentence = line_parts[2]
+                                    except:
+                                        second_sentence = 'None'
+
+                            if part.endswith('(d.') and d_flag == False:
+                                first_sentence = line_parts[j] + " " + line_parts[j+1]
+                                d_flag = True
+                        except Exception as e:
+                            if '(d.' not in part:
+                                first_sentence = line_parts[1]
                             else:
-                                try:
-                                    second_sentence = line_parts[2]
-                                except:
-                                    second_sentence = 'None'
-
-                        if part.endswith('(d.') and d_flag == False:
-                            first_sentence = line_parts[j] + " " + line_parts[j+1]
-                            d_flag = True
-                    except:
-                        if '(d.' not in part:
-                            first_sentence = line_parts[1]
-                        else:
-                            first_sentence = 'None-Faulty'
+                                first_sentence = 'None-Faulty'
+                except Exception as e:
+                    fs.append('None')
+                    ss.append('None')  
+                    continue                                                    
                     
                 fs.append(first_sentence)
                 ss.append(second_sentence)                    
@@ -143,7 +149,6 @@ def re_read_Sentences(Articles_with_BK):
 
 
     set_dir()
-
 
     f = open('./outputs/results.txt','r')
     lines = f.readlines()
