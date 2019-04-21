@@ -1,0 +1,21 @@
+{
+	"vocabulary_size" : 10000,
+	
+
+
+	"generating_batch_size" :8,
+	"generating_num_skips" : 2,
+	"generating_skip_window" : 1,
+
+
+	"batch_size" : 128,
+	"embedding_size" : 128,
+	"skip_window" : 1,
+	"num_skips" : 2,
+	"num_sampled" : 64  ,
+	"valid_size" : 16,
+	"valid_window" : 100,
+	"num_steps" : 100001
+	
+
+}
