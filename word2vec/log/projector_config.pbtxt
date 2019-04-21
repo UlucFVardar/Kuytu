@@ -1,0 +1,4 @@
+embeddings {
+  tensor_name: "embeddings/Variable:0"
+  metadata_path: "/Users/uluc/Desktop/Bitirme/Wikiparse_WorkSpace/Word_2_Vec/Hocadan gelenler/code/V3/log/metadata.tsv"
+}
